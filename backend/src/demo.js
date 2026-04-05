@@ -215,7 +215,8 @@ function getUserByToken(token) {
 }
 
 function isDemoMode() {
-  return process.env.DEMO_MODE === 'true';
+  // Default to demo mode when DEMO_MODE is true or when no Supabase is configured
+  return process.env.DEMO_MODE === 'true' || !process.env.SUPABASE_URL;
 }
 
 /**
