@@ -24,7 +24,7 @@ export default function ExcoPage() {
     queryFn: () => excoAPI.getAll(),
   });
 
-  const members = data?.data?.members || data?.data || [];
+  const members = data?.data?.exco_members || data?.data?.members || data?.data || [];
 
   const saveMutation = useMutation({
     mutationFn: (payload) =>
