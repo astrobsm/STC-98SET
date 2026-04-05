@@ -38,79 +38,40 @@ export default function MeetingPage() {
   useEffect(() => {
     if (!inMeeting || !jitsiContainerRef.current) return;
 
-    // Load Jitsi Meet External API
+    // Load public Jitsi Meet External API (no usage limits)
     const script = document.createElement('script');
-    script.src = 'https://8x8.vc/vpaas-magic-cookie-ef5ce88c523d41a599c8b1dc5b3ab765/external_api.js';
+    script.src = 'https://meet.jit.si/external_api.js';
     script.async = true;
 
     script.onload = () => {
-      if (!window.JitsiMeetExternalAPI) {
-        // Fallback to public Jitsi
-        loadPublicJitsi();
-        return;
-      }
-      try {
-        jitsiApiRef.current = new window.JitsiMeetExternalAPI('8x8.vc', {
-          roomName: `vpaas-magic-cookie-ef5ce88c523d41a599c8b1dc5b3ab765/${roomName}`,
-          parentNode: jitsiContainerRef.current,
-          userInfo: {
-            displayName: user?.full_name || 'STOBA Member',
-            email: user?.email || '',
-          },
-          configOverwrite: {
-            startWithAudioMuted: true,
-            startWithVideoMuted: false,
-            prejoinPageEnabled: false,
-          },
-          interfaceConfigOverwrite: {
-            TOOLBAR_BUTTONS: [
-              'microphone', 'camera', 'desktop', 'chat',
-              'raisehand', 'participants-pane', 'tileview', 'hangup',
-            ],
-            SHOW_JITSI_WATERMARK: false,
-            APP_NAME: 'STOBA 98 Meeting',
-          },
-        });
-        jitsiApiRef.current.addEventListener('readyToClose', leaveMeeting);
-      } catch {
-        loadPublicJitsi();
-      }
-    };
-
-    script.onerror = () => {
-      loadPublicJitsi();
+      if (!window.JitsiMeetExternalAPI || !jitsiContainerRef.current) return;
+      jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', {
+        roomName: `STOBA98-${roomName}`,
+        parentNode: jitsiContainerRef.current,
+        width: '100%',
+        height: '100%',
+        userInfo: {
+          displayName: user?.full_name || 'STOBA Member',
+          email: user?.email || '',
+        },
+        configOverwrite: {
+          startWithAudioMuted: true,
+          startWithVideoMuted: false,
+          prejoinPageEnabled: false,
+        },
+        interfaceConfigOverwrite: {
+          TOOLBAR_BUTTONS: [
+            'microphone', 'camera', 'desktop', 'chat',
+            'raisehand', 'participants-pane', 'tileview', 'hangup',
+          ],
+          SHOW_JITSI_WATERMARK: false,
+          APP_NAME: 'STOBA 98 Meeting',
+        },
+      });
+      jitsiApiRef.current.addEventListener('readyToClose', leaveMeeting);
     };
 
     document.head.appendChild(script);
-
-    function loadPublicJitsi() {
-      const fallbackScript = document.createElement('script');
-      fallbackScript.src = 'https://meet.jit.si/external_api.js';
-      fallbackScript.async = true;
-      fallbackScript.onload = () => {
-        if (!window.JitsiMeetExternalAPI || !jitsiContainerRef.current) return;
-        jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', {
-          roomName: `STOBA98-${roomName}`,
-          parentNode: jitsiContainerRef.current,
-          width: '100%',
-          height: '100%',
-          userInfo: {
-            displayName: user?.full_name || 'STOBA Member',
-            email: user?.email || '',
-          },
-          configOverwrite: {
-            startWithAudioMuted: true,
-            prejoinPageEnabled: false,
-          },
-          interfaceConfigOverwrite: {
-            SHOW_JITSI_WATERMARK: false,
-            APP_NAME: 'STOBA 98 Meeting',
-          },
-        });
-        jitsiApiRef.current.addEventListener('readyToClose', leaveMeeting);
-      };
-      document.head.appendChild(fallbackScript);
-    }
 
     return () => {
       if (jitsiApiRef.current) {
