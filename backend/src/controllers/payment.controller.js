@@ -16,7 +16,7 @@ const paymentController = {
 
       let query = supabaseAdmin
         .from('payments')
-        .select('*, users!inner(full_name, email)', { count: 'exact' })
+        .select('*, users!payments_user_id_fkey(full_name, email)', { count: 'exact' })
         .order('created_at', { ascending: false })
         .range(offset, offset + limit - 1);
 
@@ -159,7 +159,7 @@ const paymentController = {
           year,
           status: 'pending',
         })
-        .select('*, users!inner(full_name, email)')
+        .select('*, users!payments_user_id_fkey(full_name, email)')
         .single();
 
       if (error) return res.status(400).json({ error: error.message });
@@ -192,7 +192,7 @@ const paymentController = {
           updated_at: new Date().toISOString(),
         })
         .eq('id', id)
-        .select('*, users!inner(full_name, email)')
+        .select('*, users!payments_user_id_fkey(full_name, email)')
         .single();
 
       if (error) return res.status(400).json({ error: error.message });
