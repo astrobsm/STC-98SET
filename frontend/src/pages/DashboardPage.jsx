@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import {
   FiDollarSign, FiCalendar, FiUsers, FiAlertCircle,
-  FiTrendingUp, FiCheckCircle, FiClock,
+  FiTrendingUp, FiCheckCircle, FiClock, FiGift, FiHeart,
 } from 'react-icons/fi';
 import useAuthStore from '../store/authStore';
-import { paymentsAPI, eventsAPI, usersAPI } from '../services/api';
+import { paymentsAPI, eventsAPI, usersAPI, birthdaysAPI } from '../services/api';
 
 function StatCard({ icon: Icon, label, value, color, to }) {
   const card = (
@@ -43,9 +43,16 @@ export default function DashboardPage() {
     enabled: isAdminOrExco(),
   });
 
+  const { data: celebrationsData } = useQuery({
+    queryKey: ['upcoming-celebrations'],
+    queryFn: () => birthdaysAPI.getUpcoming(),
+  });
+
   const summary = summaryData?.data?.summary;
   const events = eventsData?.data?.events || [];
   const stats = statsData?.data?.stats;
+  const weekBirthdays = celebrationsData?.data?.birthdays || [];
+  const weekAnniversaries = celebrationsData?.data?.anniversaries || [];
 
   const formatMoney = (val) => `₦${Number(val || 0).toLocaleString()}`;
 
@@ -131,6 +138,68 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Upcoming Celebrations This Week */}
+      {(weekBirthdays.length > 0 || weekAnniversaries.length > 0) && (
+        <div className="card border-2 border-stoba-yellow/30 bg-gradient-to-br from-stoba-yellow/5 to-orange-50/30">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-lg text-gray-900 flex items-center gap-2">
+              <FiGift className="text-stoba-yellow" /> Celebrations This Week
+            </h3>
+            <Link to="/birthdays" className="text-sm text-stoba-green hover:underline">View All</Link>
+          </div>
+          <div className="space-y-3">
+            {weekBirthdays.map((m) => (
+              <div key={`bd-${m.id}`} className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-stoba-green flex items-center justify-center text-white font-bold">
+                  {m.avatar_url ? (
+                    <img src={m.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    m.full_name?.charAt(0) || '?'
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate">{m.full_name}</p>
+                  <p className="text-xs text-gray-500">
+                    🎂 Birthday &bull; {new Date(m.date_of_birth + 'T00:00:00').toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })}
+                  </p>
+                </div>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                  m.days_until_birthday === 0
+                    ? 'bg-stoba-yellow text-stoba-brown-dark animate-pulse'
+                    : 'bg-stoba-green/10 text-stoba-green'
+                }`}>
+                  {m.days_until_birthday === 0 ? 'TODAY!' : m.days_until_birthday === 1 ? 'Tomorrow' : `${m.days_until_birthday}d`}
+                </span>
+              </div>
+            ))}
+            {weekAnniversaries.map((m) => (
+              <div key={`an-${m.id}`} className="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
+                <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-stoba-brown flex items-center justify-center text-white font-bold">
+                  {m.avatar_url ? (
+                    <img src={m.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    m.full_name?.charAt(0) || '?'
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-gray-900 truncate">{m.full_name}</p>
+                  <p className="text-xs text-gray-500">
+                    💍 Wedding Anniversary &bull; {m.years_married} year{m.years_married !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <span className={`text-xs font-bold px-2 py-1 rounded-full ${
+                  m.days_until_anniversary === 0
+                    ? 'bg-stoba-yellow text-stoba-brown-dark animate-pulse'
+                    : 'bg-stoba-brown/10 text-stoba-brown'
+                }`}>
+                  {m.days_until_anniversary === 0 ? 'TODAY!' : m.days_until_anniversary === 1 ? 'Tomorrow' : `${m.days_until_anniversary}d`}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Watermark */}
       <div className="flex justify-center opacity-10 mt-8">

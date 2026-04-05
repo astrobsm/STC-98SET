@@ -95,11 +95,13 @@ const userController = {
         return res.status(403).json({ error: 'Access denied' });
       }
 
-      const { full_name, phone, state_of_residence } = req.body;
+      const { full_name, phone, state_of_residence, date_of_birth, wedding_anniversary } = req.body;
       const updates = {};
       if (full_name !== undefined) updates.full_name = full_name;
       if (phone !== undefined) updates.phone = phone;
       if (state_of_residence !== undefined) updates.state_of_residence = state_of_residence;
+      if (date_of_birth !== undefined) updates.date_of_birth = date_of_birth || null;
+      if (wedding_anniversary !== undefined) updates.wedding_anniversary = wedding_anniversary || null;
 
       // Handle avatar upload if file is attached
       if (req.file) {

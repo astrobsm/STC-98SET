@@ -126,6 +126,7 @@ export const amendmentsAPI = {
 // Birthdays
 export const birthdaysAPI = {
   getAll: () => api.get('/birthdays'),
+  getUpcoming: () => api.get('/birthdays/upcoming'),
   sendMessage: (data) => api.post('/birthdays/message', data),
   updateBirthday: (id, data) => api.patch(`/users/${id}/birthday`, data),
 };

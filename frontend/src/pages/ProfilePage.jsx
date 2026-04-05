@@ -1,20 +1,47 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FiUser, FiMail, FiPhone, FiMapPin, FiShield, FiEdit2, FiSave, FiGift, FiHeart, FiCamera } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 import { usersAPI, paymentsAPI } from '../services/api';
 
+// Parse a date string into { month, day } for birthday (ignore year)
+function parseBirthday(dateStr) {
+  if (!dateStr) return { month: '', day: '' };
+  const d = new Date(dateStr + 'T00:00:00');
+  return { month: String(d.getMonth() + 1), day: String(d.getDate()) };
+}
+
+// Build a DB date from month/day (store with fixed year 2000)
+function buildBirthdayDate(month, day) {
+  if (!month || !day) return '';
+  return `2000-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+const MONTHS = [
+  { value: 1, label: 'January' }, { value: 2, label: 'February' }, { value: 3, label: 'March' },
+  { value: 4, label: 'April' }, { value: 5, label: 'May' }, { value: 6, label: 'June' },
+  { value: 7, label: 'July' }, { value: 8, label: 'August' }, { value: 9, label: 'September' },
+  { value: 10, label: 'October' }, { value: 11, label: 'November' }, { value: 12, label: 'December' },
+];
+
+function daysInMonth(month) {
+  if (!month) return 31;
+  return new Date(2000, Number(month), 0).getDate();
+}
+
 export default function ProfilePage() {
   const { user, initialize } = useAuthStore();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const avatarInputRef = useRef(null);
+  const initBd = useMemo(() => parseBirthday(user?.date_of_birth), [user?.date_of_birth]);
   const [form, setForm] = useState({
     full_name: user?.full_name || '',
     phone: user?.phone || '',
     state_of_residence: user?.state_of_residence || '',
-    date_of_birth: user?.date_of_birth || '',
+    bdMonth: initBd.month,
+    bdDay: initBd.day,
     wedding_anniversary: user?.wedding_anniversary || '',
   });
 
@@ -61,7 +88,14 @@ export default function ProfilePage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateMutation.mutate(form);
+    const payload = {
+      full_name: form.full_name,
+      phone: form.phone,
+      state_of_residence: form.state_of_residence,
+      date_of_birth: buildBirthdayDate(form.bdMonth, form.bdDay),
+      wedding_anniversary: form.wedding_anniversary || '',
+    };
+    updateMutation.mutate(payload);
   };
 
   const NIGERIAN_STATES = [
@@ -168,15 +202,33 @@ export default function ProfilePage() {
               </div>
             </div>
             <div>
-              <label className="label">Date of Birth</label>
-              <div className="relative">
-                <FiGift className="absolute left-3 top-3 text-gray-400" />
-                <input
-                  className="input-field pl-10"
-                  type="date"
-                  value={form.date_of_birth}
-                  onChange={(e) => setForm({ ...form, date_of_birth: e.target.value })}
-                />
+              <label className="label">Date of Birth (Day &amp; Month)</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <FiGift className="absolute left-3 top-3 text-gray-400" />
+                  <select
+                    className="input-field pl-10 appearance-none"
+                    value={form.bdMonth}
+                    onChange={(e) => setForm({ ...form, bdMonth: e.target.value, bdDay: '' })}
+                  >
+                    <option value="">Month</option>
+                    {MONTHS.map((m) => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="relative w-24">
+                  <select
+                    className="input-field appearance-none"
+                    value={form.bdDay}
+                    onChange={(e) => setForm({ ...form, bdDay: e.target.value })}
+                  >
+                    <option value="">Day</option>
+                    {Array.from({ length: daysInMonth(form.bdMonth) }, (_, i) => i + 1).map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
             <div>
@@ -233,7 +285,7 @@ export default function ProfilePage() {
                 <FiGift className="text-stoba-green" />
                 <div>
                   <p className="text-xs text-gray-500">Birthday</p>
-                  <p className="text-sm font-medium">{user?.date_of_birth ? new Date(user.date_of_birth).toLocaleDateString('en-NG', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Not set'}</p>
+                  <p className="text-sm font-medium">{user?.date_of_birth ? new Date(user.date_of_birth + 'T00:00:00').toLocaleDateString('en-NG', { month: 'long', day: 'numeric' }) : 'Not set'}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">

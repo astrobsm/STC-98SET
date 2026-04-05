@@ -36,6 +36,8 @@ const updateProfileSchema = z.object({
   full_name: z.string().min(2).optional(),
   phone: z.string().optional(),
   state_of_residence: z.string().optional(),
+  date_of_birth: z.string().optional(),
+  wedding_anniversary: z.string().optional(),
 });
 
 const updateRoleSchema = z.object({

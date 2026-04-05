@@ -40,8 +40,8 @@ function CelebrationCard({ member, type = 'birthday', onSendMessage }) {
           <p className="text-sm text-gray-500">{info}</p>
           <p className="text-xs text-gray-400 mt-0.5">
             {isBirthday
-              ? member.date_of_birth && new Date(member.date_of_birth).toLocaleDateString('en-NG', { month: 'long', day: 'numeric' })
-              : member.wedding_anniversary && new Date(member.wedding_anniversary).toLocaleDateString('en-NG', { month: 'long', day: 'numeric' })}
+              ? member.date_of_birth && new Date(member.date_of_birth + 'T00:00:00').toLocaleDateString('en-NG', { month: 'long', day: 'numeric' })
+              : member.wedding_anniversary && new Date(member.wedding_anniversary + 'T00:00:00').toLocaleDateString('en-NG', { month: 'long', day: 'numeric', year: 'numeric' })}
           </p>
           {isToday ? (
             <div className="mt-2">
