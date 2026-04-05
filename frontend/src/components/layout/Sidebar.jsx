@@ -60,9 +60,18 @@ export default function Sidebar({ open, onClose }) {
         </div>
 
         {/* User info */}
-        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100">
-          <p className="text-sm font-medium text-gray-900 truncate">{user?.full_name}</p>
-          <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+        <div className="px-6 py-3 bg-gray-50 border-b border-gray-100 flex items-center gap-3">
+          {user?.avatar_url ? (
+            <img src={user.avatar_url} alt={user.full_name} className="w-10 h-10 rounded-full object-cover border border-gray-200 flex-shrink-0" />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-stoba-green flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+              {user?.full_name?.charAt(0) || '?'}
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">{user?.full_name}</p>
+            <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+          </div>
         </div>
 
         {/* Nav links */}

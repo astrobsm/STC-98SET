@@ -1,4 +1,21 @@
 const { supabaseAdmin } = require('../config/supabase');
+const crypto = require('crypto');
+
+/** Upload a buffer to Supabase Storage and return the public URL */
+async function uploadAvatar(fileBuffer, mimetype) {
+  const ext = mimetype === 'image/png' ? 'png' : mimetype === 'image/webp' ? 'webp' : 'jpg';
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const filePath = `avatars/${fileName}`;
+
+  const { error } = await supabaseAdmin.storage
+    .from('avatars')
+    .upload(filePath, fileBuffer, { contentType: mimetype, upsert: true });
+
+  if (error) throw new Error(`Avatar upload failed: ${error.message}`);
+
+  const { data: urlData } = supabaseAdmin.storage.from('avatars').getPublicUrl(filePath);
+  return urlData.publicUrl;
+}
 
 const userController = {
   /**
@@ -83,6 +100,16 @@ const userController = {
       if (full_name !== undefined) updates.full_name = full_name;
       if (phone !== undefined) updates.phone = phone;
       if (state_of_residence !== undefined) updates.state_of_residence = state_of_residence;
+
+      // Handle avatar upload if file is attached
+      if (req.file) {
+        try {
+          updates.avatar_url = await uploadAvatar(req.file.buffer, req.file.mimetype);
+        } catch (uploadErr) {
+          console.error('Avatar upload error:', uploadErr.message);
+        }
+      }
+
       updates.updated_at = new Date().toISOString();
 
       const { data, error } = await supabaseAdmin
@@ -141,6 +168,39 @@ const userController = {
       };
 
       res.json({ stats });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /api/users/:id/avatar — Upload/change profile picture
+   */
+  uploadAvatar: async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const userRole = req.user.profile.role;
+      const userId = req.user.profile.id;
+
+      if (userRole === 'member' && id !== userId) {
+        return res.status(403).json({ error: 'Access denied' });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ error: 'No image file provided' });
+      }
+
+      const avatar_url = await uploadAvatar(req.file.buffer, req.file.mimetype);
+
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .update({ avatar_url, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) return res.status(400).json({ error: error.message });
+      res.json({ user: data, message: 'Avatar updated' });
     } catch (err) {
       next(err);
     }

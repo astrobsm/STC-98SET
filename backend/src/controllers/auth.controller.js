@@ -1,8 +1,25 @@
 const { supabaseAdmin, supabase } = require('../config/supabase');
+const crypto = require('crypto');
+
+/** Upload a buffer to Supabase Storage and return the public URL */
+async function uploadAvatar(fileBuffer, mimetype) {
+  const ext = mimetype === 'image/png' ? 'png' : mimetype === 'image/webp' ? 'webp' : 'jpg';
+  const fileName = `${crypto.randomUUID()}.${ext}`;
+  const filePath = `avatars/${fileName}`;
+
+  const { error } = await supabaseAdmin.storage
+    .from('avatars')
+    .upload(filePath, fileBuffer, { contentType: mimetype, upsert: true });
+
+  if (error) throw new Error(`Avatar upload failed: ${error.message}`);
+
+  const { data: urlData } = supabaseAdmin.storage.from('avatars').getPublicUrl(filePath);
+  return urlData.publicUrl;
+}
 
 const authController = {
   /**
-   * POST /api/auth/register
+   * POST /api/auth/register  (multipart/form-data when avatar attached)
    */
   register: async (req, res, next) => {
     try {
@@ -19,6 +36,17 @@ const authController = {
         return res.status(400).json({ error: authError.message });
       }
 
+      // If a photo was uploaded, store it in Supabase Storage
+      let avatar_url = null;
+      if (req.file) {
+        try {
+          avatar_url = await uploadAvatar(req.file.buffer, req.file.mimetype);
+        } catch (uploadErr) {
+          console.error('Avatar upload error:', uploadErr.message);
+          // Non-fatal: continue registration without avatar
+        }
+      }
+
       // Create user profile
       const { data: profile, error: profileError } = await supabaseAdmin
         .from('users')
@@ -28,6 +56,7 @@ const authController = {
           email,
           phone: phone || null,
           state_of_residence: state_of_residence || null,
+          avatar_url,
           role: 'member',
         })
         .select()

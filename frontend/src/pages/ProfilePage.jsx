@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { FiUser, FiMail, FiPhone, FiMapPin, FiShield, FiEdit2, FiSave, FiGift, FiHeart } from 'react-icons/fi';
+import { FiUser, FiMail, FiPhone, FiMapPin, FiShield, FiEdit2, FiSave, FiGift, FiHeart, FiCamera } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 import { usersAPI, paymentsAPI } from '../services/api';
@@ -9,6 +9,7 @@ export default function ProfilePage() {
   const { user, initialize } = useAuthStore();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
+  const avatarInputRef = useRef(null);
   const [form, setForm] = useState({
     full_name: user?.full_name || '',
     phone: user?.phone || '',
@@ -32,6 +33,29 @@ export default function ProfilePage() {
     },
     onError: (err) => toast.error(err.response?.data?.error || 'Update failed'),
   });
+
+  const avatarMutation = useMutation({
+    mutationFn: (file) => usersAPI.uploadAvatar(user.id, file),
+    onSuccess: () => {
+      toast.success('Profile picture updated!');
+      initialize();
+    },
+    onError: (err) => toast.error(err.response?.data?.error || 'Upload failed'),
+  });
+
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Only JPEG, PNG, or WebP images allowed');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    avatarMutation.mutate(file);
+  };
 
   const summary = summaryData?.data?.summary;
 
@@ -62,9 +86,30 @@ export default function ProfilePage() {
       {/* Profile Card */}
       <div className="card">
         <div className="flex flex-col sm:flex-row items-center gap-6 mb-6 pb-6 border-b border-gray-100">
-          <div className="w-24 h-24 rounded-full bg-stoba-green flex items-center justify-center text-white text-3xl font-bold shadow-lg">
-            {user?.full_name?.charAt(0) || '?'}
-          </div>
+          <button
+            type="button"
+            onClick={() => avatarInputRef.current?.click()}
+            className="relative w-24 h-24 rounded-full overflow-hidden shadow-lg border-2 border-stoba-green group cursor-pointer"
+            title="Change profile picture"
+          >
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt={user.full_name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-stoba-green flex items-center justify-center text-white text-3xl font-bold">
+                {user?.full_name?.charAt(0) || '?'}
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <FiCamera className="text-white" size={20} />
+            </div>
+          </button>
+          <input
+            ref={avatarInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={handleAvatarChange}
+            className="hidden"
+          />
           <div className="text-center sm:text-left">
             <h2 className="text-xl font-bold text-gray-900">{user?.full_name}</h2>
             <p className="text-gray-500">{user?.email}</p>

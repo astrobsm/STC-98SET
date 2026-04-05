@@ -44,9 +44,13 @@ export default function TopBar({ onMenuClick }) {
             )}
           </Link>
           <Link to="/profile" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-stoba-green flex items-center justify-center text-white text-sm font-bold">
-              {user?.full_name?.charAt(0) || '?'}
-            </div>
+            {user?.avatar_url ? (
+              <img src={user.avatar_url} alt={user.full_name} className="w-8 h-8 rounded-full object-cover border border-gray-200" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-stoba-green flex items-center justify-center text-white text-sm font-bold">
+                {user?.full_name?.charAt(0) || '?'}
+              </div>
+            )}
           </Link>
         </div>
       </div>

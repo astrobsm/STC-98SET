@@ -51,7 +51,7 @@ api.interceptors.response.use(
 
 // Auth
 export const authAPI = {
-  register: (data) => api.post('/auth/register', data),
+  register: (data) => api.post('/auth/register', data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}),
   login: (data) => api.post('/auth/login', data),
   logout: () => api.post('/auth/logout'),
   getMe: () => api.get('/auth/me'),
@@ -61,9 +61,14 @@ export const authAPI = {
 export const usersAPI = {
   getAll: (params) => api.get('/users', { params }),
   getById: (id) => api.get(`/users/${id}`),
-  update: (id, data) => api.patch(`/users/${id}`, data),
+  update: (id, data) => api.patch(`/users/${id}`, data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}),
   updateRole: (id, data) => api.patch(`/users/${id}/role`, data),
   getStats: () => api.get('/users/stats/overview'),
+  uploadAvatar: (id, file) => {
+    const fd = new FormData();
+    fd.append('avatar', file);
+    return api.post(`/users/${id}/avatar`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
 };
 
 // Payments

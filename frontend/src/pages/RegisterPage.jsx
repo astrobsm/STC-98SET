@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiLock, FiPhone, FiMapPin, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiPhone, FiMapPin, FiEye, FiEyeOff, FiCamera } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 
@@ -17,6 +17,9 @@ export default function RegisterPage() {
   const { register } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const fileInputRef = useRef(null);
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -29,6 +32,21 @@ export default function RegisterPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast.error('Only JPEG, PNG, or WebP images allowed');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be under 5MB');
+      return;
+    }
+    setAvatarFile(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password.length < 6) {
@@ -37,7 +55,15 @@ export default function RegisterPage() {
     }
     setLoading(true);
     try {
-      await register(form);
+      const payload = new FormData();
+      payload.append('full_name', form.full_name);
+      payload.append('email', form.email);
+      payload.append('password', form.password);
+      if (form.phone) payload.append('phone', form.phone);
+      if (form.state_of_residence) payload.append('state_of_residence', form.state_of_residence);
+      if (avatarFile) payload.append('avatar', avatarFile);
+
+      await register(payload);
       toast.success('Registration successful! Please sign in.');
       navigate('/login');
     } catch (err) {
@@ -80,6 +106,32 @@ export default function RegisterPage() {
             <p className="text-gray-500 mb-6">Register as a STOBA 98 member</p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Avatar picker */}
+              <div className="flex flex-col items-center">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative w-24 h-24 rounded-full overflow-hidden border-2 border-dashed border-gray-300 hover:border-stoba-green transition-colors group"
+                >
+                  {avatarPreview ? (
+                    <img src={avatarPreview} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-gray-400 group-hover:text-stoba-green">
+                      <FiCamera size={24} />
+                      <span className="text-xs mt-1">Photo</span>
+                    </div>
+                  )}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+                <p className="text-xs text-gray-400 mt-1">Optional — tap to upload</p>
+              </div>
+
               <div>
                 <label className="label">Full Name *</label>
                 <div className="relative">
