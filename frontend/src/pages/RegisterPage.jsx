@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { FiUser, FiMail, FiLock, FiPhone, FiMapPin, FiEye, FiEyeOff, FiCamera } from 'react-icons/fi';
+import { FiUser, FiMail, FiLock, FiPhone, FiMapPin, FiEye, FiEyeOff, FiCamera, FiCheckSquare, FiSquare, FiChevronDown } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import useAuthStore from '../store/authStore';
 
@@ -12,6 +12,119 @@ const NIGERIAN_STATES = [
   'Yobe','Zamfara',
 ];
 
+const USER_AGREEMENT = `
+STOBA 98 OLD BOYS ASSOCIATION
+MEMBERSHIP AGREEMENT & CODE OF CONDUCT
+
+Effective Date: January 1, 2026
+
+This Membership Agreement ("Agreement") is entered into between the St. Teresa's College Nsukka Old Boys Association, 1992–1998 Set ("STOBA 98" or "the Association") and the undersigned individual ("Member") upon successful registration on the STOBA 98 Platform.
+
+By clicking "I Accept" and completing registration, you acknowledge that you have read, understood, and agree to be bound by the following terms:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 1 — OBJECTIVES OF THE ASSOCIATION
+
+The Association exists to:
+  1. Promote unity, brotherhood, and mutual support among all members of the 1992–1998 graduating set of St. Teresa's College, Nsukka.
+  2. Foster personal and professional development of members through networking, mentorship, and collaboration.
+  3. Give back to our alma mater — St. Teresa's College, Nsukka — through projects, sponsorships, and community engagement.
+  4. Organize social, cultural, and networking events that strengthen the bond among members.
+  5. Provide welfare support to members and their families in times of need, celebration, or bereavement.
+  6. Uphold the values of integrity, discipline, and service that were instilled in us during our years at St. Teresa's College.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 2 — ELIGIBILITY
+
+Membership is open exclusively to former students of St. Teresa's College, Nsukka, who were part of the 1992–1998 set. By registering, you confirm that you are a bona fide member of this set.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 3 — MEMBER OBLIGATIONS
+
+As a registered member, you agree to:
+
+  a) FINANCIAL OBLIGATIONS
+     • Pay the annual membership due of ₦10,000 (Ten Thousand Naira) as and when due, either in full or in approved installments.
+     • Contribute to special levies, projects, or fundraising initiatives as approved by the Executive Committee (EXCO) and ratified by the general membership.
+     • Submit payment proofs promptly through the platform for verification.
+
+  b) PARTICIPATION
+     • Attend quarterly meetings held on the last Sunday of March, June, September, and December, whether in person or via the platform's virtual meeting facility.
+     • Actively participate in association events, projects, and programmes.
+     • Respond to communications, notifications, and directives from the EXCO in a timely manner.
+
+  c) CONDUCT
+     • Treat all fellow members with respect, dignity, and courtesy at all times.
+     • Refrain from any form of harassment, discrimination, hate speech, or conduct that brings the Association into disrepute.
+     • Maintain confidentiality of member information and internal discussions shared on the platform.
+     • Not use the Association's name, logo, or platform for personal commercial gain without prior written approval from the EXCO.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 4 — USE OF THE STOBA 98 PLATFORM
+
+  a) You agree to provide accurate and truthful information during registration and to keep your profile updated.
+  b) Your account is personal and non-transferable. You are responsible for maintaining the security of your login credentials.
+  c) You shall not upload, share, or transmit any content that is offensive, defamatory, fraudulent, or violates any applicable law.
+  d) The Association reserves the right to suspend or terminate your account for violation of this Agreement.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 5 — GOVERNANCE
+
+  a) The Association is governed by its Constitution, which is accessible on the platform under the "Constitution" section.
+  b) Decisions are made democratically. Constitutional amendments follow the prescribed voting process on the platform.
+  c) The EXCO, elected by the general membership, manages the day-to-day affairs of the Association.
+  d) Members have the right to propose amendments to the Constitution through the platform.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 6 — PRIVACY & DATA PROTECTION
+
+  a) Your personal data (name, email, phone, state of residence, profile photo) is collected solely for the purpose of managing your membership and facilitating Association activities.
+  b) Your information will not be sold, shared, or disclosed to third parties without your consent, except as required by law.
+  c) You may request the deletion of your account and associated data by contacting the EXCO. Note that financial records may be retained for audit purposes.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 7 — SANCTIONS & DISPUTE RESOLUTION
+
+  a) Violation of this Agreement may result in a warning, suspension, or expulsion from the Association, at the discretion of the EXCO.
+  b) Any disputes between members shall be resolved amicably. Where resolution is not possible, the matter shall be referred to the EXCO or a committee appointed for that purpose.
+  c) Decisions of the EXCO on disciplinary matters are final, subject to appeal at a general meeting.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 8 — LIMITATION OF LIABILITY
+
+  a) The Association and its officers shall not be held liable for any loss, damage, or injury arising from participation in Association activities, except in cases of gross negligence.
+  b) The platform is provided "as is." While we strive for reliability, the Association does not guarantee uninterrupted access or availability of the platform.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 9 — AMENDMENTS TO THIS AGREEMENT
+
+This Agreement may be amended from time to time by the EXCO. Members will be notified of any changes through the platform. Continued use of the platform after notification constitutes acceptance of the amended terms.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ARTICLE 10 — ACCEPTANCE
+
+By checking the acceptance box and completing registration, I, the undersigned, hereby declare that:
+  • I am a bona fide member of the 1992–1998 set of St. Teresa's College, Nsukka.
+  • I have read and understood this Membership Agreement in its entirety.
+  • I agree to abide by the Association's Constitution, this Agreement, and all lawful directives of the EXCO.
+  • I commit to fully participate in the activities, meetings, and programmes of the Association.
+  • I understand that failure to comply with these terms may result in disciplinary action.
+
+God bless STOBA 98. God bless St. Teresa's College, Nsukka.
+
+— The Executive Committee, STOBA 98 Old Boys Association
+`.trim();
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { register } = useAuthStore();
@@ -19,7 +132,10 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [agreed, setAgreed] = useState(false);
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const fileInputRef = useRef(null);
+  const agreementRef = useRef(null);
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -49,6 +165,10 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!agreed) {
+      toast.error('You must read and accept the Membership Agreement to register');
+      return;
+    }
     if (form.password.length < 6) {
       toast.error('Password must be at least 6 characters');
       return;
@@ -221,7 +341,44 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <button type="submit" className="btn-primary w-full" disabled={loading}>
+              {/* Membership Agreement */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <div className="bg-stoba-green/10 px-4 py-2 border-b border-gray-200">
+                  <h3 className="text-sm font-semibold text-stoba-green">Membership Agreement</h3>
+                  <p className="text-xs text-gray-500">Please read the agreement below before registering</p>
+                </div>
+                <div
+                  ref={agreementRef}
+                  onScroll={(e) => {
+                    const el = e.target;
+                    if (el.scrollHeight - el.scrollTop - el.clientHeight < 30) {
+                      setHasScrolledToBottom(true);
+                    }
+                  }}
+                  className="p-4 max-h-48 overflow-y-auto bg-gray-50 text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed"
+                >
+                  {USER_AGREEMENT}
+                </div>
+                {!hasScrolledToBottom && (
+                  <div className="flex items-center justify-center gap-1 py-1.5 bg-stoba-yellow/20 text-stoba-brown text-xs animate-bounce">
+                    <FiChevronDown size={14} /> Scroll down to read the full agreement
+                  </div>
+                )}
+                <label className={`flex items-start gap-3 px-4 py-3 border-t border-gray-200 cursor-pointer ${!hasScrolledToBottom ? 'opacity-50 pointer-events-none' : 'hover:bg-green-50'}`}>
+                  <button
+                    type="button"
+                    onClick={() => hasScrolledToBottom && setAgreed(!agreed)}
+                    className="mt-0.5 flex-shrink-0 text-stoba-green"
+                  >
+                    {agreed ? <FiCheckSquare size={20} /> : <FiSquare size={20} />}
+                  </button>
+                  <span className="text-xs text-gray-700 leading-relaxed">
+                    I have read and understood the <strong>STOBA 98 Membership Agreement</strong>. I confirm that I am a member of the 1992–1998 set of St. Teresa's College, Nsukka, and I agree to fully participate in the activities of the Association and abide by its Constitution.
+                  </span>
+                </label>
+              </div>
+
+              <button type="submit" className="btn-primary w-full" disabled={loading || !agreed}>
                 {loading ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
