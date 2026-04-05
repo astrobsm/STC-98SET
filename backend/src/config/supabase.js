@@ -13,7 +13,9 @@ const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
-// Public client (respects RLS)
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Public client (respects RLS, but safe for server-side usage)
+const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: { autoRefreshToken: false, persistSession: false }
+});
 
 module.exports = { supabase, supabaseAdmin };

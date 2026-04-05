@@ -20,6 +20,11 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // Normalize error.response.data.error to always be a string
+    if (error.response?.data?.error && typeof error.response.data.error !== 'string') {
+      error.response.data.error = error.response.data.error.message || 'Something went wrong';
+    }
+
     if (error.response?.status === 401) {
       // Try refresh token
       const refresh = localStorage.getItem('refresh_token');
