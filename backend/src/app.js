@@ -54,6 +54,7 @@ if (isDemoMode()) {
   const constitutionRoutes = require('./routes/constitution.routes');
   const excoRoutes = require('./routes/exco.routes');
   const birthdayRoutes = require('./routes/birthday.routes');
+  const contributionRoutes = require('./routes/contribution.routes');
 
   app.use('/api/auth', authRoutes);
   app.use('/api/users', userRoutes);
@@ -63,6 +64,7 @@ if (isDemoMode()) {
   app.use('/api/constitution', constitutionRoutes);
   app.use('/api/exco', excoRoutes);
   app.use('/api/birthdays', birthdayRoutes);
+  app.use('/api/contributions', contributionRoutes);
 }
 
 // 404 handler
