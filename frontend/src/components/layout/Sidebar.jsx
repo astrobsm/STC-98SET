@@ -1,7 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   FiHome, FiDollarSign, FiCalendar, FiFileText, FiUsers,
-  FiBell, FiUser, FiVideo, FiCheckSquare, FiAward, FiX, FiLogOut, FiTarget, FiGift,
+  FiBell, FiUser, FiVideo, FiCheckSquare, FiAward, FiX, FiLogOut, FiTarget, FiGift, FiImage,
 } from 'react-icons/fi';
 import useAuthStore from '../../store/authStore';
 
@@ -14,6 +14,7 @@ const navItems = [
   { to: '/exco', icon: FiAward, label: 'EXCO Members' },
   { to: '/meeting', icon: FiVideo, label: 'Meeting Room' },
   { to: '/birthdays', icon: FiGift, label: 'Celebrations' },
+  { to: '/gallery', icon: FiImage, label: 'Member Gallery' },
   { to: '/notifications', icon: FiBell, label: 'Notifications' },
   { to: '/profile', icon: FiUser, label: 'Profile' },
 ];

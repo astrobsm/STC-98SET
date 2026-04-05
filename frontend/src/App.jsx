@@ -17,6 +17,7 @@ import PaymentApprovalsPage from './pages/PaymentApprovalsPage';
 import ExcoPage from './pages/ExcoPage';
 import ContributionsPage from './pages/ContributionsPage';
 import BirthdaysPage from './pages/BirthdaysPage';
+import MemberGalleryPage from './pages/MemberGalleryPage';
 import LoadingScreen from './components/LoadingScreen';
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
           <Route path="/contributions" element={<ContributionsPage />} />
           <Route path="/exco" element={<ExcoPage />} />
           <Route path="/birthdays" element={<BirthdaysPage />} />
+          <Route path="/gallery" element={<MemberGalleryPage />} />
 
           {/* Admin/Exco only */}
           <Route element={<ProtectedRoute allowedRoles={['admin', 'exco']} />}>
