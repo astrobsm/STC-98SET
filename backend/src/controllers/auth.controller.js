@@ -1,4 +1,4 @@
-const { supabaseAdmin } = require('../config/supabase');
+const { supabaseAdmin, supabase } = require('../config/supabase');
 
 const authController = {
   /**
@@ -55,7 +55,8 @@ const authController = {
     try {
       const { email, password } = req.body;
 
-      const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+      // Use the anon client for sign-in to avoid polluting the admin client's session
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -64,7 +65,7 @@ const authController = {
         return res.status(401).json({ error: 'Invalid email or password' });
       }
 
-      // Fetch user profile
+      // Fetch user profile using admin client (bypasses RLS)
       const { data: profile, error: profileError } = await supabaseAdmin
         .from('users')
         .select('*')
