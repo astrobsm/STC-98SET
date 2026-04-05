@@ -1,95 +1,80 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { FiVideo, FiVideoOff, FiLink, FiCalendar, FiUsers } from 'react-icons/fi';
+import { FiVideo, FiVideoOff, FiLink, FiCalendar, FiUsers, FiLoader } from 'react-icons/fi';
 import toast from 'react-hot-toast';
-import { eventsAPI } from '../services/api';
+import { eventsAPI, meetingsAPI } from '../services/api';
 import useAuthStore from '../store/authStore';
 
 export default function MeetingPage() {
   const { user, isAdminOrExco } = useAuthStore();
   const [inMeeting, setInMeeting] = useState(false);
   const [roomName, setRoomName] = useState('STOBA98-General');
-  const jitsiContainerRef = useRef(null);
-  const jitsiApiRef = useRef(null);
+  const [roomUrl, setRoomUrl] = useState(null);
+  const [joining, setJoining] = useState(false);
+  const iframeRef = useRef(null);
 
   const { data: eventsData } = useQuery({
     queryKey: ['meeting-events'],
     queryFn: () => eventsAPI.getAll({ type: 'meeting', upcoming: 'true', limit: 5 }),
   });
 
+  const { data: configData } = useQuery({
+    queryKey: ['meeting-config'],
+    queryFn: () => meetingsAPI.getConfig(),
+  });
+
+  const dailyConfigured = configData?.data?.configured;
+  const dailyDomain = configData?.data?.domain;
   const meetings = eventsData?.data?.events || [];
 
-  const startMeeting = (room) => {
-    const name = room || roomName;
-    // Sanitize room name for Jitsi
-    const sanitized = name.replace(/[^a-zA-Z0-9-_]/g, '');
-    setRoomName(sanitized);
-    setInMeeting(true);
-  };
+  const startMeeting = useCallback(async (room) => {
+    const name = (room || roomName).replace(/[^a-zA-Z0-9-_]/g, '');
+    setRoomName(name);
+    setJoining(true);
 
-  const leaveMeeting = () => {
-    if (jitsiApiRef.current) {
-      jitsiApiRef.current.dispose();
-      jitsiApiRef.current = null;
+    try {
+      if (dailyConfigured) {
+        // Use backend to create/get a Daily.co room
+        const res = await meetingsAPI.createRoom(name);
+        setRoomUrl(res.data.url);
+      } else {
+        // Fallback: construct URL from domain directly
+        setRoomUrl(`https://${dailyDomain || 'stoba98'}.daily.co/${name}`);
+      }
+      setInMeeting(true);
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to create meeting room');
+    } finally {
+      setJoining(false);
     }
+  }, [roomName, dailyConfigured, dailyDomain]);
+
+  const leaveMeeting = useCallback(() => {
     setInMeeting(false);
-  };
+    setRoomUrl(null);
+  }, []);
 
+  // Listen for Daily.co iframe "left-meeting" message
   useEffect(() => {
-    if (!inMeeting || !jitsiContainerRef.current) return;
-
-    // Load public Jitsi Meet External API (no usage limits)
-    const script = document.createElement('script');
-    script.src = 'https://meet.jit.si/external_api.js';
-    script.async = true;
-
-    script.onload = () => {
-      if (!window.JitsiMeetExternalAPI || !jitsiContainerRef.current) return;
-      jitsiApiRef.current = new window.JitsiMeetExternalAPI('meet.jit.si', {
-        roomName: `STOBA98-${roomName}`,
-        parentNode: jitsiContainerRef.current,
-        width: '100%',
-        height: '100%',
-        userInfo: {
-          displayName: user?.full_name || 'STOBA Member',
-          email: user?.email || '',
-        },
-        configOverwrite: {
-          startWithAudioMuted: true,
-          startWithVideoMuted: false,
-          prejoinPageEnabled: false,
-        },
-        interfaceConfigOverwrite: {
-          TOOLBAR_BUTTONS: [
-            'microphone', 'camera', 'desktop', 'chat',
-            'raisehand', 'participants-pane', 'tileview', 'hangup',
-          ],
-          SHOW_JITSI_WATERMARK: false,
-          APP_NAME: 'STOBA 98 Meeting',
-        },
-      });
-      jitsiApiRef.current.addEventListener('readyToClose', leaveMeeting);
-    };
-
-    document.head.appendChild(script);
-
-    return () => {
-      if (jitsiApiRef.current) {
-        jitsiApiRef.current.dispose();
-        jitsiApiRef.current = null;
+    const handleMessage = (event) => {
+      if (event.data?.action === 'left-meeting') {
+        leaveMeeting();
       }
     };
-  }, [inMeeting, roomName, user]);
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [leaveMeeting]);
 
   const copyLink = (room) => {
-    const link = `https://meet.jit.si/STOBA98-${room || roomName}`;
+    const name = (room || roomName).replace(/[^a-zA-Z0-9-_]/g, '');
+    const link = `https://${dailyDomain || 'stoba98'}.daily.co/${name}`;
     navigator.clipboard.writeText(link).then(
       () => toast.success('Meeting link copied!'),
       () => toast.error('Failed to copy')
     );
   };
 
-  if (inMeeting) {
+  if (inMeeting && roomUrl) {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -100,10 +85,13 @@ export default function MeetingPage() {
             <FiVideoOff className="inline mr-2" size={16} />Leave Meeting
           </button>
         </div>
-        <div
-          ref={jitsiContainerRef}
+        <iframe
+          ref={iframeRef}
+          src={roomUrl}
+          allow="camera; microphone; fullscreen; display-capture; autoplay"
           className="w-full rounded-xl overflow-hidden bg-gray-900"
-          style={{ height: 'calc(100vh - 200px)', minHeight: '400px' }}
+          style={{ height: 'calc(100vh - 200px)', minHeight: '400px', border: 'none' }}
+          title="Daily.co Meeting"
         />
       </div>
     );
@@ -130,8 +118,9 @@ export default function MeetingPage() {
             />
           </div>
           <div className="flex gap-2">
-            <button onClick={() => startMeeting()} className="btn-secondary whitespace-nowrap">
-              <FiVideo className="inline mr-2" size={16} />Join Meeting
+            <button onClick={() => startMeeting()} disabled={joining} className="btn-secondary whitespace-nowrap">
+              {joining ? <FiLoader className="inline mr-2 animate-spin" size={16} /> : <FiVideo className="inline mr-2" size={16} />}
+              {joining ? 'Joining...' : 'Join Meeting'}
             </button>
             <button onClick={() => copyLink()} className="p-2.5 bg-white/20 rounded-lg hover:bg-white/30 transition-colors" title="Copy meeting link">
               <FiLink size={18} />

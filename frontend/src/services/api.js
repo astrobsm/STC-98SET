@@ -142,4 +142,10 @@ export const contributionsAPI = {
   verifyPayment: (cid, pid, data) => api.patch(`/contributions/${cid}/payments/${pid}/verify`, data),
 };
 
+// Meetings
+export const meetingsAPI = {
+  getConfig: () => api.get('/meetings/config'),
+  createRoom: (name) => api.post('/meetings/room', { name }),
+};
+
 export default api;
