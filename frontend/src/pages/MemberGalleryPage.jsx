@@ -117,12 +117,12 @@ export default function MemberGalleryPage() {
           {/* Member content */}
           <div className="flex flex-col items-center justify-center py-12 px-6">
             {/* Avatar */}
-            <div className="w-56 h-56 sm:w-72 sm:h-72 rounded-full overflow-hidden shadow-2xl border-4 border-stoba-green mb-8">
+            <div className="w-56 h-56 sm:w-72 sm:h-72 rounded-2xl overflow-hidden shadow-2xl border-4 border-stoba-green mb-8 bg-gray-100 flex items-center justify-center">
               {member.avatar_url ? (
                 <img
                   src={member.avatar_url}
                   alt={member.full_name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-stoba-green to-stoba-green-light flex items-center justify-center text-white text-7xl font-bold">
@@ -182,7 +182,7 @@ export default function MemberGalleryPage() {
             <button
               key={m.id}
               onClick={() => setCurrentIndex(i)}
-              className={`flex-shrink-0 w-12 h-12 rounded-full overflow-hidden border-2 transition-all ${
+              className={`flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all ${
                 i === currentIndex ? 'border-stoba-green scale-110 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
               }`}
             >
@@ -231,9 +231,9 @@ export default function MemberGalleryPage() {
             onClick={() => { setMode('slideshow'); setCurrentIndex(i); setPlaying(false); }}
             className="card p-4 flex flex-col items-center gap-3 hover:shadow-lg transition-shadow cursor-pointer text-center group"
           >
-            <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-200 group-hover:border-stoba-green transition-colors">
+            <div className="w-20 h-20 rounded-xl overflow-hidden border-2 border-gray-200 group-hover:border-stoba-green transition-colors bg-gray-100 flex items-center justify-center">
               {m.avatar_url ? (
-                <img src={m.avatar_url} alt={m.full_name} className="w-full h-full object-cover" />
+                <img src={m.avatar_url} alt={m.full_name} className="w-full h-full object-contain" />
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-stoba-green to-stoba-green-light flex items-center justify-center text-white text-2xl font-bold">
                   {m.full_name?.charAt(0) || '?'}
