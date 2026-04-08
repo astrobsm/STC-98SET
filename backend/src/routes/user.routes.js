@@ -8,6 +8,7 @@ const { upload } = require('../utils/upload');
 
 router.use(authenticate);
 
+router.get('/gallery', userController.getGallery);
 router.get('/', authorize('admin', 'exco'), userController.getAll);
 router.get('/stats/overview', authorize('admin', 'exco'), userController.getStats);
 router.get('/:id', userController.getById);

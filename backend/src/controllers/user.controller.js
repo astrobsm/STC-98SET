@@ -19,6 +19,25 @@ async function uploadAvatar(fileBuffer, mimetype) {
 
 const userController = {
   /**
+   * GET /api/users/gallery — Any authenticated member: list members for gallery
+   */
+  getGallery: async (req, res, next) => {
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('id, full_name, avatar_url, state_of_residence, role, phone, email')
+        .eq('is_active', true)
+        .neq('status', 'suspended')
+        .order('full_name', { ascending: true });
+
+      if (error) return res.status(400).json({ error: error.message });
+      res.json(data);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * GET /api/users — Admin/Exco: list all members
    */
   getAll: async (req, res, next) => {

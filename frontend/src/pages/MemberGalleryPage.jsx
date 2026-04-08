@@ -13,12 +13,10 @@ export default function MemberGalleryPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['gallery-members'],
-    queryFn: () => usersAPI.getAll({ limit: 500 }),
+    queryFn: () => usersAPI.getGallery(),
   });
 
-  const members = (data?.data?.users || data?.data || []).filter(
-    (m) => m.status !== 'suspended'
-  );
+  const members = data?.data || [];
 
   // Auto-advance slideshow
   useEffect(() => {

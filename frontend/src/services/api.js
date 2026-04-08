@@ -60,6 +60,7 @@ export const authAPI = {
 // Users
 export const usersAPI = {
   getAll: (params) => api.get('/users', { params }),
+  getGallery: () => api.get('/users/gallery'),
   getById: (id) => api.get(`/users/${id}`),
   update: (id, data) => api.patch(`/users/${id}`, data, data instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {}),
   updateRole: (id, data) => api.patch(`/users/${id}/role`, data),
