@@ -27,7 +27,6 @@ const userController = {
         .from('users')
         .select('id, full_name, avatar_url, state_of_residence, role, phone, email')
         .eq('is_active', true)
-        .neq('status', 'suspended')
         .order('full_name', { ascending: true });
 
       if (error) return res.status(400).json({ error: error.message });
